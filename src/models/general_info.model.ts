@@ -3,10 +3,7 @@ import mongoose from "mongoose";
 
 
 export interface GeneralInfoDocument extends mongoose.Document {
-  company: string,
-  ticker: string,
   code: number,
-  class: number,
   image: string,
   circulating_supply: number,
   total_supply: number,
@@ -18,10 +15,7 @@ export interface GeneralInfoDocument extends mongoose.Document {
 }
 
 const generalInfoSchema = new mongoose.Schema({
-  company: { type: String, unique: true, required: true },
-  ticker: { type: String, unique: true, required: true },
   code: { type: Number, unique: true, required: true },
-  class: { type: Number, required: true },
   image: { type: String },
   circulating_supply: { type: Number },
   total_supply: { type: Number },
@@ -29,7 +23,9 @@ const generalInfoSchema = new mongoose.Schema({
   sector: { type: String },
   is_top: { type: Boolean },
 
-}, { timestamps: true })
+}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
+
+
 
 const GeneralInfoModel = mongoose.model("GeneralInfo", generalInfoSchema)
 

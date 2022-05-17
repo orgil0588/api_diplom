@@ -1,20 +1,29 @@
-import { object, string, number, TypeOf } from "zod"
+import { object, string, number, TypeOf, boolean } from "zod"
 
 export const createGeneralInfoSchema = object({
   body: object({
-    company: string({
+    code: number({
       required_error: "Company is required"
     }),
-    ticker: string({
+    image: string({
       required_error: "Ticker is required"
     }),
-    code: number({
+    circulating_supply: number({
       required_error: 'Code is required'
     }),
-    class: number({
+    total_supply: number({
       required_error: "Class is required"
+    }),
+    industry: string({
+      required_error: "Ticker is required"
+    }),
+    sector: string({
+      required_error: "Ticker is required"
+    }),
+    is_top: boolean({
+      required_error: "isTop is required"
     })
   })
 })
 
-export type CreateStockListInput = TypeOf<typeof createGeneralInfoSchema>;
+export type CreateGeneralInfoInput = TypeOf<typeof createGeneralInfoSchema>;

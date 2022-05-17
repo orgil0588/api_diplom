@@ -16,11 +16,12 @@ export async function find() {
   if (!result) {
     throw new CustomError('not found', 400)
   }
-
+  return result
 }
 // < -------------------------------------------------------------------------------------> // 
 export async function findByCode(findCode: number) {
-  const result = await StockListModel.findOne({ code: findCode })
+  const result = await StockListModel.findOne({ code: findCode }).populate('general')
+  // populate('general') - general[]
   if (!result) {
     throw new CustomError('not found', 400)
   }
