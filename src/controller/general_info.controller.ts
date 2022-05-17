@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { CreateGeneralInfoInput } from "../schema/general_info.schema";
 import { create, find, findByCode, findByCodeAndUpdate, findByCodeAndDelete } from "../service/general_info.service";
-
 import logger from "../utils/logger"
 
-
+// < ------------------------------------------------------------------------------------- > // 
 export async function createGeneralInfoHandler(req: Request<{}, {}, CreateGeneralInfoInput["body"]>, res: Response) {
   try {
     const info = await create(req.body)// call create info service
@@ -22,6 +21,7 @@ export async function createGeneralInfoHandler(req: Request<{}, {}, CreateGenera
     })
   }
 }
+// < ------------------------------------------------------------------------------------- > // 
 export async function findGeneralInfoHandler(req: Request, res: Response) {
   try {
     const info = await find()// call create info service
@@ -39,7 +39,7 @@ export async function findGeneralInfoHandler(req: Request, res: Response) {
     })
   }
 }
-
+// < ------------------------------------------------------------------------------------- > // 
 export async function findOnceGeneralInfoHandler(req: Request, res: Response) {
   try {
     const findCode: number = parseInt(req.params.code)
@@ -58,6 +58,7 @@ export async function findOnceGeneralInfoHandler(req: Request, res: Response) {
     })
   }
 }
+// < ------------------------------------------------------------------------------------- > // 
 export async function updateGeneralInfoHandler(req: Request, res: Response) {
   try {
     const findCode: number = parseInt(req.params.code)
@@ -76,6 +77,7 @@ export async function updateGeneralInfoHandler(req: Request, res: Response) {
     })
   }
 }
+// < ------------------------------------------------------------------------------------- > // 
 export async function deleteGeneralInfoHandler(req: Request, res: Response) {
   try {
     const findCode: number = parseInt(req.params.code)
@@ -94,3 +96,4 @@ export async function deleteGeneralInfoHandler(req: Request, res: Response) {
     })
   }
 }
+// < ------------------------------------------------------------------------------------- > // 

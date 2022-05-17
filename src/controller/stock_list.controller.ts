@@ -59,7 +59,7 @@ export async function findOnceStockHandler(req: Request, res: Response) {
     })
   }
 }
-// < -------------------------------------------------------------------------------------> // 
+// < ------------------------------------------------------------------------------------- > // 
 export async function updateStockHandler(req: Request, res: Response) {
   try {
     const findCode: number = parseInt(req.params.code)

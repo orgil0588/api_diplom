@@ -2,7 +2,7 @@ import { DocumentDefinition } from "mongoose"
 import GeneralInfoModel, { GeneralInfoDocument } from "../models/general_info.model"
 import CustomError from "../utils/error"
 
-
+// < ------------------------------------------------------------------------------------- > // 
 export async function create(input: DocumentDefinition<Omit<GeneralInfoDocument, "createdAt" | "updatedAt">>) {
   const result = await GeneralInfoModel.create(input)
   if (!result) {
@@ -11,7 +11,7 @@ export async function create(input: DocumentDefinition<Omit<GeneralInfoDocument,
   return result
 
 }
-
+// < ------------------------------------------------------------------------------------- > // 
 export async function find() {
   const result = await GeneralInfoModel.find()
   if (!result) {
@@ -20,6 +20,7 @@ export async function find() {
   return result
 
 }
+// < ------------------------------------------------------------------------------------- > // 
 export async function findByCode(findCode: number) {
   const result = await GeneralInfoModel.findOne({
     code: findCode
@@ -28,8 +29,8 @@ export async function findByCode(findCode: number) {
     throw new CustomError('not found', 400)
   }
   return result
-
 }
+// < ------------------------------------------------------------------------------------- > // 
 export async function findByCodeAndUpdate(findCode: number, body: any) {
   const result = await GeneralInfoModel.findOneAndUpdate({
     code: findCode
@@ -38,8 +39,8 @@ export async function findByCodeAndUpdate(findCode: number, body: any) {
     throw new CustomError('not found', 400)
   }
   return result
-
 }
+// < ------------------------------------------------------------------------------------- > // 
 export async function findByCodeAndDelete(findCode: number) {
   const result = await GeneralInfoModel.findOneAndDelete({
     code: findCode
@@ -48,5 +49,5 @@ export async function findByCodeAndDelete(findCode: number) {
     throw new CustomError('not found', 400)
   }
   return result
-
 }
+// < ------------------------------------------------------------------------------------- > // 
