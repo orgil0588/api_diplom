@@ -5,6 +5,7 @@ import logger from "./utils/logger"
 import routes from './routes';
 import swaggerJsDoc from "swagger-jsdoc"
 import swaggerUi from "swagger-ui-express"
+import interval from './utils/interval';
 const port = config.get<number>('port')
 
 const app = express()
@@ -32,6 +33,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 app.listen(port, async () => {
   logger.info(`App is running : ${port}`);
-  await connect();
+  connect();
   routes(app)
+  interval()
 })
