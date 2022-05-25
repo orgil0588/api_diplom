@@ -31,7 +31,7 @@ const crawler = async () => {
             }) > td:nth-child(4)`;
           const close = `${classSelector[classIdx]
             } > tbody:nth-child(2) > tr:nth-child(${index + 1
-            }) > td:nth-child(7)`;
+            }) > td:nth-child(5)`;
 
           const change = `${classSelector[classIdx]
             } > tbody:nth-child(2) > tr:nth-child(${index + 1
@@ -52,13 +52,13 @@ const crawler = async () => {
             date: new Date().toISOString().split("T")[0],
           };
           axios.post('http://localhost:8001/api/trade_history/crawler/', obj)
-          console.log(obj);
         });
       }
+      console.log('success');
     })
     .catch((err) => {
       if (err.response) {
-        console.log(err.message);
+        console.log(err);
         return err.message;
       }
     });

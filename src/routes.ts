@@ -2,9 +2,11 @@ import { Express, Request, Response } from 'express'
 import { createGeneralInfoHandler, findGeneralInfoHandler, findOnceGeneralInfoHandler, updateGeneralInfoHandler, deleteGeneralInfoHandler } from './controller/general_info.controller'
 import { findStockHandler, createStockHandler, findOnceStockHandler, updateStockHandler, deleteStockHandler } from './controller/stock_list.controller'
 import { crawlerTradeHistoryHandler, createTradeHistoryHandler, findOneTradeHistoryHandler, findTradeHistoryHandler } from './controller/trade_history.controller'
+import { topFourHandler } from './controller/utility.controller'
 import validateResource from "./middleware/validateResource"
 import { createStockListSchema } from './schema/stock_list.schema'
 import { createGeneralInfoSchema } from "./schema/general_info.schema"
+import { createFinancialReportHandler } from './controller/financial_report.controller'
 function routes(app: Express) {
 
   app.get('/', (req: Request, res: Response) => {
@@ -36,6 +38,12 @@ function routes(app: Express) {
   app.post('/api/trade_history/crawler/', crawlerTradeHistoryHandler)
   app.get('/api/trade_history/', findTradeHistoryHandler)
   app.get('/api/trade_history/:code', findOneTradeHistoryHandler)
+
+  // /api/financial_report/
+  app.post('/api/financial_report/', createFinancialReportHandler)
+
+  // /api/utils/top_four
+  app.get('/api/utils/top_four/:code', topFourHandler)
 
 }
 

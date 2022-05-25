@@ -25,7 +25,12 @@ const generalInfoSchema = new mongoose.Schema({
 
 }, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 
-
+generalInfoSchema.virtual('history', {
+  ref: 'TradeHistory',
+  localField: "code",
+  foreignField: 'code',
+  justOne: false
+})
 
 const GeneralInfoModel = mongoose.model("GeneralInfo", generalInfoSchema)
 

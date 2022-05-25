@@ -7,7 +7,7 @@ const interval = async () => {
       currentDate.getDay() !== 6 &&
       currentDate.getDay() !== 0 &&
       currentDate.getHours() >= 8 &&
-      currentDate.getHours() <= 16
+      currentDate.getHours() <= 20
     ) {
       crawler();
     }
