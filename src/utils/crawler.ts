@@ -51,7 +51,7 @@ const crawler = async () => {
             volume: parseFloat($(volume).text()),
             date: new Date().toISOString().split("T")[0],
           };
-          axios.post('http://localhost:8001/api/trade_history/crawler/', obj)
+          axios.post('http://localhost:8080/api/trade_history/crawler/', obj)
         });
       }
       console.log('success');
