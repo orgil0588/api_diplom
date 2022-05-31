@@ -1,6 +1,5 @@
+import c from "config"
 import { DocumentDefinition } from "mongoose"
-import { pipeline } from "stream"
-import { arrayBuffer } from "stream/consumers"
 import GeneralInfoModel from "../models/general_info.model"
 import StockListModel from "../models/stock_list.model"
 import TradeHistoryModel from "../models/trade_history"
@@ -71,5 +70,73 @@ export async function marketInfo(findCode: number) {
     throw new CustomError('not found', 400)
   }
   return result
+
+}
+export async function tickerList() {
+  const result = await StockListModel.aggregate([
+    {
+      "$lookup": {
+        'from': 'tradehistories',
+        'localField': 'code',
+        'foreignField': 'code',
+        'as': 'history',
+        "pipeline": [
+          {
+            $sort: { date: -1 }
+          },
+          {
+            $limit: 1
+          }
+        ]
+      }
+    }
+
+  ])
+
+  // .select({ code: 1, ticker: 1, company: -1, _id: -1, class: -1 })
+  if (!result) {
+    throw new CustomError('not found', 400)
+  }
+  if (result) {
+    return result
+  }
+
+}
+export async function marketList() {
+  const result = await StockListModel.aggregate([
+    {
+      "$lookup": {
+        'from': 'tradehistories',
+        'localField': 'code',
+        'foreignField': 'code',
+        'as': 'history',
+        "pipeline": [
+          {
+            $sort: { date: -1 }
+          },
+          {
+            $limit: 1
+          }
+        ]
+      }
+    },
+    {
+      "$lookup": {
+        'from': 'generalinfos',
+        'localField': 'code',
+        'foreignField': 'code',
+        'as': 'info',
+      }
+    }
+
+  ])
+
+  // .select({ code: 1, ticker: 1, company: -1, _id: -1, class: -1 })
+  if (!result) {
+    throw new CustomError('not found', 400)
+  }
+  if (result) {
+    return result
+  }
 
 }
