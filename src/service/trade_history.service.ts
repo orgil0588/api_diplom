@@ -1,5 +1,6 @@
 import { DocumentDefinition } from "mongoose"
 import TradeHistoryModel, { TradeHistoryDocument } from "../models/trade_history"
+import { datePatch } from "../utils/date_patch"
 import CustomError from "../utils/error"
 // < -------------------------------------------------------------------------------------> // 
 export async function create(input: DocumentDefinition<TradeHistoryDocument>) {
@@ -36,5 +37,5 @@ export async function findOneStockHistory(findCode: number) {
   if (!result) {
     throw new CustomError('not found', 400)
   }
-  return result
+  return datePatch(result)
 }

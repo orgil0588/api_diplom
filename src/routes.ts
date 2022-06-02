@@ -48,7 +48,7 @@ function routes(app: Express) {
   // /api/utils/market
   app.get('/api/utils/market/:code', marketTopInfo)
   app.get('/api/utils/ticker_list', tickerListHandler)
-  app.get('/api/utils/market_list', marketListHandler)
+  app.get('/api/utils/market_list/', marketListHandler)
 
 }
 
