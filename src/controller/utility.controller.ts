@@ -55,10 +55,11 @@ export async function tickerListHandler(req: Request, res: Response) {
 export async function marketListHandler(req: Request, res: Response) {
   try {
 
-    const result = await marketList(req.url.split('?')[1])
+    const result: any = await marketList(req.url.split('?')[1])
     return res.send({
       status: 200,
-      data: result
+      count: result.pagination,
+      data: result.result
     })
   } catch (error) {
     console.error(error)

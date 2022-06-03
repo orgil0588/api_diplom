@@ -104,14 +104,136 @@ export async function tickerList() {
 
 }
 export async function marketList(query: any) {
-  console.log(query);
+  interface initQuery {
+    class: any,
+    sort: any,
+    offset: any,
 
-  const initQuery = {
-    offset: query.split('&')[0].split('=')[1],
-    sort: query.split('&')[1].split('=')[1],
-    class: query.split('&')[2].split('=')[1]
   }
+  const initQuery: initQuery = {
+    class: query.split('&').length > 0 ? query.split('&')[0].split('=')[1] : "all",
+    sort: query.split('&').length > 1 ? query.split('&')[1].split('=')[1] : 'marketcap',
+    offset: query.split('&').length > 2 ? parseInt(query.split('&')[2].split('=')[1]) : 20,
+  }
+
+  switch (initQuery.class) {
+    case 'all':
+      initQuery.class = {
+        begin: 0,
+        end: 4,
+        is_top: {
+          $exists: true, $ne: null
+        }
+      }
+      break;
+    case 'a':
+      initQuery.class = {
+        begin: 0,
+        end: 2,
+        is_top: {
+          $exists: true, $ne: null
+        }
+      }
+      break;
+    case 'b':
+      initQuery.class = {
+        begin: 1,
+        end: 3,
+        is_top: {
+          $exists: true, $ne: null
+        }
+      }
+      break;
+    case 'c':
+      initQuery.class = {
+        begin: 2,
+        end: 4,
+        is_top: {
+          $exists: true, $ne: null
+        }
+      }
+      break;
+    case 'top':
+      initQuery.class = {
+        begin: 0,
+        end: 4,
+        is_top: "TRUE"
+      }
+  }
+  switch (initQuery.sort) {
+    case 'marketcap':
+      initQuery.sort = {
+        name: "marketcap",
+        asc: -1
+      }
+      break
+    case 'ticker':
+      initQuery.sort = {
+        name: "company",
+        asc: 1
+      }
+      break
+    case 'change':
+      initQuery.sort = {
+        name: "history.change",
+        asc: -1
+      }
+      break
+    case 'close':
+      initQuery.sort = {
+        name: "history.close",
+        asc: -1
+      }
+      break
+    case 'volume':
+      initQuery.sort = {
+        name: "history.volume",
+        asc: -1
+      }
+    case 'industry':
+      initQuery.sort = {
+        name: "info.industry",
+        asc: 1
+      }
+    case 'sector':
+      initQuery.sort = {
+        name: "info.sector",
+        asc: 1
+      }
+      break
+  }
+  initQuery.offset = {
+    begin: initQuery.offset - 20,
+    end: initQuery.offset
+  }
+
   console.log(initQuery);
+  const length = await StockListModel.aggregate([{
+    "$lookup": {
+      'from': 'generalinfos',
+      'localField': 'code',
+      'foreignField': 'code',
+      'as': 'info',
+      "pipeline": [
+        {
+          $project: {
+            _id: 0,
+            circulating_supply: 0,
+            date: 0,
+          }
+        }
+
+      ]
+    }
+  }, {
+    $match: {
+      $and: [{ class: { $gt: initQuery.class.begin, $lt: initQuery.class.end } }, {
+        "info.is_top": initQuery.class.is_top
+      }]
+    }
+    // $exists: true, $ne: null
+    // $match: { "$info.is_top": "TRUE" }
+  },]).count('count')
   const result = await StockListModel.aggregate([
     {
       "$lookup": {
@@ -125,87 +247,84 @@ export async function marketList(query: any) {
           },
           {
             $limit: 1
+          },
+          {
+            $project: {
+              _id: 0,
+              ticker: 0,
+              code: 0,
+              date: 0,
+              __v: 0
+            }
           }
         ]
       }
-    },
-    {
+    }, {
       "$lookup": {
         'from': 'generalinfos',
         'localField': 'code',
         'foreignField': 'code',
         'as': 'info',
+        "pipeline": [
+          {
+            $project: {
+              _id: 0,
+              circulating_supply: 0,
+              date: 0,
+            }
+          }
+
+        ]
       }
-    }
+    },
+    {
+      $unwind: "$info"
+    },
+    {
+      $unwind: "$history"
+    },
+    {
+      $addFields: {
+        marketcap: {
+          $multiply: [
+            {
+              $toInt: "$info.total_supply"
+            }, "$history.close"
+          ]
+        }
+      }
+    },
+    {
+      $match: {
+        $and: [{ class: { $gt: initQuery.class.begin, $lt: initQuery.class.end } }, {
+          "info.is_top": initQuery.class.is_top
+        }]
+      }
+      // $exists: true, $ne: null
+      // $match: { "$info.is_top": "TRUE" }
+    },
+    {
+      $sort: {
+        [initQuery.sort.name]: initQuery.sort.asc
+      }
+    },
+
+    { $skip: initQuery.offset.begin },
+    { $limit: initQuery.offset.end }
+
+
+
 
   ])
-  let arr: any[] = []
-  result.map(element => {
-    let obj = {
-      code: element.code,
-      ticker: element.ticker,
-      company: element.company,
-      class: element.class,
-      is_top: element.info[0].is_top,
-      image: element.info[0].image,
-      close: element.history.length !== 0 ? element.history[0].close : 0,
-      change: element.history.length !== 0 ? element.history[0].change : 0,
-      volume: element.history.length !== 0 ? element.history[0].volume : 0,
-      marketcap: element.history.length !== 0 ? element.info[0].total_supply * element.history[0].close : 0,
-      industry: element.info[0].industry,
-      sector: element.info[0].sector,
-    }
-    arr.push(obj)
-  })
-  let sorted: any[] = []
-  let querying: any[] = []
 
-  if (initQuery.sort) {
-    switch (initQuery.sort) {
-      case 'marketcap':
-        arr.sort((a, b) => {
-          return b.marketcap - a.marketcap
-        })
-        break;
-      case 'ticker':
-        arr.sort((a, b) => {
-          return a.ticker.localeCompare(b.ticker)
-        })
-    }
-  }
-
-  if (initQuery.class) {
-    switch (initQuery.class) {
-      case 'a':
-        querying.push(...arr.filter((item) => item.class === 1))
-        break;
-      case 'b':
-        querying.push(...arr.filter((item) => item.class === 2))
-        break;
-      case 'c':
-        querying.push(...arr.filter((item) => item.class === 3))
-        break;
-      case 'all':
-        querying.push(...arr)
-        break;
-      case 'top':
-        querying.push(...arr.filter((item) => item.is_top === "TRUE"))
-        break;
-    }
-  }
-  if (initQuery.offset) {
-    for (let i = initQuery.offset - 20; i < initQuery.offset; i++) {
-      sorted.push(arr[i])
-    }
-  }
-
-  if (!arr) {
+  if (!result) {
     throw new CustomError('not found', 400)
   }
-
-  const paginate = {
-    sorted: sorted,
-    length: querying.length
+  const pagination = {
+    length: length[0].count,
+    skip: initQuery.offset.begin,
+    limit: initQuery.offset.end
   }
-  return paginate
+  console.log(length);
+  return { result, pagination }
 }
