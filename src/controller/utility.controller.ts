@@ -1,4 +1,4 @@
-import { setDefaultResultOrder } from "dns";
+
 import { Request, Response } from "express";
 import { marketInfo, topFour, tickerList, marketList } from "../service/utility.service";
 import logger from "../utils/logger"
@@ -59,9 +59,10 @@ export async function marketListHandler(req: Request, res: Response) {
     return res.send({
       status: 200,
       count: result.pagination,
-      data: result.result
+      data: result.data
     })
   } catch (error) {
     console.error(error)
   }
 }
+

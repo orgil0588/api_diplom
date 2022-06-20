@@ -1,0 +1,17 @@
+[
+  { "ticker": "DTU", "code": 526 },
+  { "ticker": "DGS", "code": 504 },
+  { "ticker": "EUD", "code": 506 },
+  { "ticker": "HTS", "code": 518 },
+  { "ticker": "NDS", "code": 500 },
+  { "ticker": "DUS", "code": 505 },
+  { "ticker": "DKS", "code": 502 },
+  { "ticker": "DSD", "code": 514 },
+  { "ticker": "MTZ", "code": 536 },
+  { "ticker": "UTS", "code": 515 },
+  { "ticker": "DDS", "code": 498 },
+  { "ticker": "DSH", "code": 519 },
+  { "ticker": "EDS", "code": 499 },
+  { "ticker": "HBJ", "code": 510 },
+  { "ticker": "UDS", "code": 497 }
+]

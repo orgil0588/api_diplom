@@ -1,7 +1,7 @@
-import c from "config"
-import e from "express"
+
 import { DocumentDefinition } from "mongoose"
 import GeneralInfoModel from "../models/general_info.model"
+import MergedListModel from "../models/merged_list.model"
 import StockListModel from "../models/stock_list.model"
 import TradeHistoryModel from "../models/trade_history"
 import CustomError from "../utils/error"
@@ -19,13 +19,38 @@ export async function topFour(findCode: number) {
       }
     },
     {
+      $project: {
+        _id: 0,
+        open: 0,
+        low: 0,
+        high: 0,
+        circulating_supply: 0,
+        date: 0,
+        __v: 0
+      }
+    },
+    {
       '$limit': 1
     }, {
       '$lookup': {
         'from': 'generalinfos',
         'localField': 'code',
         'foreignField': 'code',
-        'as': 'info'
+        'as': 'info',
+        'pipeline': [
+          {
+            $project: {
+              _id: 0,
+              code: 0,
+              circulating_supply: 0,
+              total_supply: 0,
+              sector: 0,
+              industry: 0,
+              date: 0,
+              is_top: 0,
+            }
+          },
+        ]
       }
     }
   ])
@@ -76,6 +101,13 @@ export async function marketInfo(findCode: number) {
 export async function tickerList() {
   const result = await StockListModel.aggregate([
     {
+      $project: {
+        _id: 0,
+        company: 0,
+
+      }
+    },
+    {
       "$lookup": {
         'from': 'tradehistories',
         'localField': 'code',
@@ -86,6 +118,19 @@ export async function tickerList() {
             $sort: { date: -1 }
           },
           {
+            $project: {
+              _id: 0,
+              ticker: 0,
+              code: 0,
+              open: 0,
+              high: 0,
+              low: 0,
+              volume: 0,
+              date: 0,
+              __v: 0
+            }
+          },
+          {
             $limit: 1
           }
         ]
@@ -94,7 +139,6 @@ export async function tickerList() {
 
   ])
 
-  // .select({ code: 1, ticker: 1, company: -1, _id: -1, class: -1 })
   if (!result) {
     throw new CustomError('not found', 400)
   }
@@ -103,7 +147,11 @@ export async function tickerList() {
   }
 
 }
+
+
+
 export async function marketList(query: any) {
+ 
   interface initQuery {
     class: any,
     sort: any,
@@ -116,125 +164,55 @@ export async function marketList(query: any) {
     offset: query.split('&').length > 2 ? parseInt(query.split('&')[2].split('=')[1]) : 20,
   }
 
-  switch (initQuery.class) {
-    case 'all':
-      initQuery.class = {
-        begin: 0,
-        end: 4,
-        is_top: {
-          $exists: true, $ne: null
-        }
-      }
-      break;
-    case 'a':
-      initQuery.class = {
-        begin: 0,
-        end: 2,
-        is_top: {
-          $exists: true, $ne: null
-        }
-      }
-      break;
-    case 'b':
-      initQuery.class = {
-        begin: 1,
-        end: 3,
-        is_top: {
-          $exists: true, $ne: null
-        }
-      }
-      break;
-    case 'c':
-      initQuery.class = {
-        begin: 2,
-        end: 4,
-        is_top: {
-          $exists: true, $ne: null
-        }
-      }
-      break;
-    case 'top':
-      initQuery.class = {
-        begin: 0,
-        end: 4,
-        is_top: "TRUE"
-      }
-  }
-  switch (initQuery.sort) {
-    case 'marketcap':
-      initQuery.sort = {
-        name: "marketcap",
-        asc: -1
-      }
-      break
-    case 'ticker':
-      initQuery.sort = {
-        name: "company",
-        asc: 1
-      }
-      break
-    case 'change':
-      initQuery.sort = {
-        name: "history.change",
-        asc: -1
-      }
-      break
-    case 'close':
-      initQuery.sort = {
-        name: "history.close",
-        asc: -1
-      }
-      break
-    case 'volume':
-      initQuery.sort = {
-        name: "history.volume",
-        asc: -1
-      }
-    case 'industry':
-      initQuery.sort = {
-        name: "info.industry",
-        asc: 1
-      }
-    case 'sector':
-      initQuery.sort = {
-        name: "info.sector",
-        asc: 1
-      }
-      break
-  }
-  initQuery.offset = {
-    begin: initQuery.offset - 20,
-    end: initQuery.offset
+
+  let dbQuery:any = {
+    is_top: initQuery.class === 'top' ? true : { $exists: true, $ne: null },
+    classification: initQuery.class === 'all' || initQuery.class === 'top' ? {
+      begin: 0,
+      end: 4
+    } : initQuery.class > 3 ? {
+      begin: 0,
+      end: 4
+    }  : {
+      begin: parseInt(initQuery.class) - 1,
+      end: parseInt(initQuery.class) + 1
+    },
+    sort : initQuery.sort === 'code' || initQuery.sort === 'marketcap' || initQuery.sort === 'close'  ? -1 : 1,
+    // sort : 1,
+    offset: {
+      begin: initQuery.offset - 20,
+      end: initQuery.offset
+    }
+    
   }
 
-  console.log(initQuery);
-  const length = await StockListModel.aggregate([{
-    "$lookup": {
-      'from': 'generalinfos',
-      'localField': 'code',
-      'foreignField': 'code',
-      'as': 'info',
-      "pipeline": [
-        {
-          $project: {
-            _id: 0,
-            circulating_supply: 0,
-            date: 0,
-          }
-        }
-
-      ]
+  console.log(dbQuery)
+  const length = await MergedListModel.aggregate([
+    {
+      $match: {
+        $and: [
+          { is_top: dbQuery.is_top },
+          { class: { $gt: dbQuery.classification.begin, $lt: dbQuery.classification.end } }
+        ]
+      }
+    },{
+      $count: 'total'
     }
-  }, {
-    $match: {
-      $and: [{ class: { $gt: initQuery.class.begin, $lt: initQuery.class.end } }, {
-        "info.is_top": initQuery.class.is_top
-      }]
-    }
-    // $exists: true, $ne: null
-    // $match: { "$info.is_top": "TRUE" }
-  },]).count('count')
-  const result = await StockListModel.aggregate([
+  ])
+  const data = await MergedListModel.aggregate([
+    {
+      $match: {
+        $and: [ { is_top: dbQuery.is_top },  { class: { $gt: dbQuery.classification.begin, $lt: dbQuery.classification.end } }
+        ]
+      }
+    },
+    {
+      $sort: {
+        ticker: 1
+      }
+    },
+    { $skip: dbQuery.offset.begin },
+    { $limit: 20 },
     {
       "$lookup": {
         'from': 'tradehistories',
@@ -253,32 +231,11 @@ export async function marketList(query: any) {
               _id: 0,
               ticker: 0,
               code: 0,
-              date: 0,
               __v: 0
             }
           }
         ]
       }
-    }, {
-      "$lookup": {
-        'from': 'generalinfos',
-        'localField': 'code',
-        'foreignField': 'code',
-        'as': 'info',
-        "pipeline": [
-          {
-            $project: {
-              _id: 0,
-              circulating_supply: 0,
-              date: 0,
-            }
-          }
-
-        ]
-      }
-    },
-    {
-      $unwind: "$info"
     },
     {
       $unwind: "$history"
@@ -287,44 +244,23 @@ export async function marketList(query: any) {
       $addFields: {
         marketcap: {
           $multiply: [
-            {
-              $toInt: "$info.total_supply"
-            }, "$history.close"
+
+            "$total_supply",
+            "$history.close"
           ]
         }
       }
     },
-    {
-      $match: {
-        $and: [{ class: { $gt: initQuery.class.begin, $lt: initQuery.class.end } }, {
-          "info.is_top": initQuery.class.is_top
-        }]
-      }
-      // $exists: true, $ne: null
-      // $match: { "$info.is_top": "TRUE" }
-    },
-    {
-      $sort: {
-        [initQuery.sort.name]: initQuery.sort.asc
-      }
-    },
-
-    { $skip: initQuery.offset.begin },
-    { $limit: initQuery.offset.end }
-
-
-
-
+    
   ])
 
-  if (!result) {
-    throw new CustomError('not found', 400)
+  let pagination = {
+    total : length[0].total,
+    limit: dbQuery.offset.end,
+    skip : dbQuery.offset.begin
+
   }
-  const pagination = {
-    length: length[0].count,
-    skip: initQuery.offset.begin,
-    limit: initQuery.offset.end
-  }
-  console.log(length);
-  return { result, pagination }
+  console.log(pagination)
+  return {data, pagination}
+
 }

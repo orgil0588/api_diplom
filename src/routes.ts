@@ -2,7 +2,7 @@ import { Express, Request, Response } from 'express'
 import { createGeneralInfoHandler, findGeneralInfoHandler, findOnceGeneralInfoHandler, updateGeneralInfoHandler, deleteGeneralInfoHandler } from './controller/general_info.controller'
 import { findStockHandler, createStockHandler, findOnceStockHandler, updateStockHandler, deleteStockHandler } from './controller/stock_list.controller'
 import { crawlerTradeHistoryHandler, createTradeHistoryHandler, findOneTradeHistoryHandler, findTradeHistoryHandler } from './controller/trade_history.controller'
-import { marketListHandler, marketTopInfo, tickerListHandler, topFourHandler } from './controller/utility.controller'
+import {  marketListHandler, marketTopInfo, tickerListHandler, topFourHandler } from './controller/utility.controller'
 import validateResource from "./middleware/validateResource"
 import { createStockListSchema } from './schema/stock_list.schema'
 import { createGeneralInfoSchema } from "./schema/general_info.schema"
@@ -50,6 +50,7 @@ function routes(app: Express) {
   app.get('/api/utils/ticker_list', tickerListHandler)
   app.get('/api/utils/market_list/', marketListHandler)
 
+  
 }
 
 export default routes

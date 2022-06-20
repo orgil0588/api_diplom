@@ -1,6 +1,6 @@
 import { DocumentDefinition } from "mongoose"
 import TradeHistoryModel, { TradeHistoryDocument } from "../models/trade_history"
-import { datePatch } from "../utils/date_patch"
+import datePatch from "../utils/date_patch"
 import CustomError from "../utils/error"
 // < -------------------------------------------------------------------------------------> // 
 export async function create(input: DocumentDefinition<TradeHistoryDocument>) {
@@ -32,10 +32,26 @@ export async function findByCode(code: number, date: string) {
   //628467f5adb3cd08885c4061
   return result
 }
+//
 export async function findOneStockHistory(findCode: number) {
-  const result = await TradeHistoryModel.find({ code: findCode })
+  const result = await TradeHistoryModel.aggregate([
+    {
+      $match: { code: findCode }
+    }
+    ,
+    {
+      $project: {
+        _id: 0,
+        code: 0
+      }
+    },
+  ])
   if (!result) {
     throw new CustomError('not found', 400)
   }
-  return datePatch(result)
+
+
+  const all = datePatch(result)
+
+  return all
 }
